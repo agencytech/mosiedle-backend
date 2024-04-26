@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  fullName   String
+  email      String   @unique
+  password   String
+  created_at DateTime @default(now())
+
+  role_id String?
+  role    Role?   @relation(fields: [role_id], references: [id])
+
+  communities      Community[] @relation("CommunityMembers")
+  community_admins Community[] @relation("CommunityAdmins")
+
+  announcements Announcement[]
+}
+
+model Community {
+  id            String         @id @default(cuid())
+  members       User[]         @relation("CommunityMembers")
+  admins        User[]         @relation("CommunityAdmins")
+  name          String         @unique
+  street_name   String?        @unique
+  contact_email String
+  announcements Announcement[]
+}
+
+model Announcement {
+  id          String      @id @default(cuid())
+  communities Community[]
+  importance  Int
+  icon        String
+  title       String
+  text        String
+  author_id   String
+  author      User        @relation(fields: [author_id], references: [id])
+  created_at  DateTime    @default(now())
+  edited_at   DateTime    @default(now())
+  expire_at   DateTime
+}
+
+model Role {
+  id    String @id @default(cuid())
+  name  String
+  users User[]
+}
