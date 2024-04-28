@@ -33,6 +33,7 @@ model Community {
   id            String         @id @default(cuid())
   members       User[]         @relation("CommunityMembers")
   admins        User[]         @relation("CommunityAdmins")
+  code          String         @unique
   name          String         @unique
   street_name   String?        @unique
   contact_email String

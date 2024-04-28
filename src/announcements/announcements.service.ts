@@ -12,15 +12,15 @@ export class AnnouncementsService {
     return `This action returns all announcements`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} announcement`;
   }
 
-  update(id: number, updateAnnouncementDto: UpdateAnnouncementDto) {
+  update(id: string, updateAnnouncementDto: UpdateAnnouncementDto) {
     return `This action updates a #${id} announcement`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} announcement`;
   }
 }
