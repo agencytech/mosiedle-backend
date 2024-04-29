@@ -1,15 +1,36 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  // Patch,
+  Param,
+  UseGuards,
+  Request,
+  // Delete,
+} from '@nestjs/common';
 import { CommunitiesService } from './communities.service';
-import { CreateCommunityDto } from './dto/create-community.dto';
-import { UpdateCommunityDto } from './dto/update-community.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+// import { CreateCommunityDto } from './dto/create-community.dto';
+// import { UpdateCommunityDto } from './dto/update-community.dto';
 
 @Controller('communities')
 export class CommunitiesController {
   constructor(private readonly communitiesService: CommunitiesService) {}
 
-  @Post()
-  create(@Body() createCommunityDto: CreateCommunityDto) {
-    return this.communitiesService.create(createCommunityDto);
+  // @Post()
+  // create(@Body() createCommunityDto: CreateCommunityDto) {
+  //   return this.communitiesService.create(createCommunityDto);
+  // }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('join/:communityId')
+  join(
+    @Param('communityId') communityId: string,
+    @Request() req: any,
+    @Body() body: { code: string },
+  ) {
+    return this.communitiesService.join(communityId, req.user.id, body.code);
   }
 
   @Get()
@@ -22,13 +43,16 @@ export class CommunitiesController {
     return this.communitiesService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCommunityDto: UpdateCommunityDto) {
-    return this.communitiesService.update(+id, updateCommunityDto);
-  }
+  // @Patch(':id')
+  // update(
+  //   @Param('id') id: string,
+  //   @Body() updateCommunityDto: UpdateCommunityDto,
+  // ) {
+  //   return this.communitiesService.update(+id, updateCommunityDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.communitiesService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.communitiesService.remove(+id);
+  // }
 }
