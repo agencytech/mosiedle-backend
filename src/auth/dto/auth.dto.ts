@@ -7,5 +7,4 @@ export class AuthRegisterDto {
   email: string;
   password: string;
   fullName: string;
-  community_code: string;
 }

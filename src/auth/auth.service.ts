@@ -16,10 +16,6 @@ function validateRegisterPayload(registerPayload: AuthRegisterDto) {
   if (!registerPayload.fullName) {
     throw new HttpException('Full name is required', 400);
   }
-
-  if (!registerPayload.community_code) {
-    throw new HttpException('Community code is required', 400);
-  }
 }
 
 @Injectable()
@@ -74,16 +70,6 @@ export class AuthService {
       );
     }
 
-    const isCodeValid = await this.prisma.community.findUnique({
-      where: {
-        code: registerPayload.community_code,
-      },
-    });
-
-    if (!isCodeValid) {
-      throw new HttpException('Invalid community code', 400);
-    }
-
     try {
       await this.prisma.user.create({
         data: {
@@ -94,26 +80,6 @@ export class AuthService {
       });
     } catch (e) {
       throw new HttpException('Error creating user: \n' + e.message, 500);
-    }
-
-    try {
-      await this.prisma.community.update({
-        where: {
-          code: registerPayload.community_code,
-        },
-        data: {
-          members: {
-            connect: {
-              email: registerPayload.email,
-            },
-          },
-        },
-      });
-    } catch (e) {
-      throw new HttpException(
-        'Error adding user to community: \n' + e.message,
-        500,
-      );
     }
 
     return {
