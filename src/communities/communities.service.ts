@@ -1,12 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCommunityDto } from './dto/create-community.dto';
-import { UpdateCommunityDto } from './dto/update-community.dto';
+import { HttpException, Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/database/prisma.service';
+// import { CreateCommunityDto } from './dto/create-community.dto';
+// import { UpdateCommunityDto } from './dto/update-community.dto';
 
 @Injectable()
 export class CommunitiesService {
-  create(createCommunityDto: CreateCommunityDto) {
-    return 'This action adds a new community';
-  }
+  constructor(private prisma: PrismaService) {}
+  // create(createCommunityDto: CreateCommunityDto) {
+  //   return 'This action adds a new community';
+  // }
 
   findAll() {
     return `This action returns all communities`;
@@ -16,11 +18,65 @@ export class CommunitiesService {
     return `This action returns a #${id} community`;
   }
 
-  update(id: number, updateCommunityDto: UpdateCommunityDto) {
-    return `This action updates a #${id} community`;
+  async join(communityId: string, userId: string, community_code: string) {
+    if (!community_code) {
+      throw new HttpException('Community code is required', 400);
+    }
+
+    const community = await this.prisma.community.findUnique({
+      where: {
+        id: communityId,
+      },
+      include: {
+        members: true,
+      },
+    });
+
+    if (!community) {
+      throw new HttpException('Community not found', 404);
+    }
+
+    community.members.forEach((member) => {
+      if (member.id === userId) {
+        throw new HttpException(
+          'User is already a member of this community',
+          400,
+        );
+      }
+    });
+
+    if (community_code !== community.code) {
+      throw new HttpException('Invalid community code', 400);
+    }
+
+    try {
+      await this.prisma.community.update({
+        where: {
+          id: communityId,
+        },
+        data: {
+          members: {
+            connect: {
+              id: userId,
+            },
+          },
+        },
+      });
+
+      return {
+        message: 'Successfully joined community with id ' + communityId,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error.message, 500);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} community`;
-  }
+  // update(id: number, updateCommunityDto: UpdateCommunityDto) {
+  //   return `This action updates a #${id} community`;
+  // }
+
+  // remove(id: number) {
+  //   return `This action removes a #${id} community`;
+  // }
 }
