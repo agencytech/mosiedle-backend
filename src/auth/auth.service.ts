@@ -46,11 +46,14 @@ export class AuthService {
 
   async login(user: User) {
     const { password, ...result } = user;
+
+    const tokens = await this.getTokens(user);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
     return {
-      access_token: this.jwtService.sign({
-        sub: user.id,
-        ...result,
-      }),
+      access_token: tokens.accessToken,
+      refresh_token: tokens.refreshToken,
+      ...result,
     };
   }
 
@@ -71,20 +74,109 @@ export class AuthService {
     }
 
     try {
-      await this.prisma.user.create({
+      const user = await this.prisma.user.create({
         data: {
           email: registerPayload.email,
           password: registerPayload.password,
           fullName: registerPayload.fullName,
         },
+        include: {
+          role: true,
+          communities: true,
+          community_admins: true,
+          announcements: true,
+        },
       });
+      const tokens = await this.getTokens(user);
+      await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+      const { password, ...userData } = user;
+
+      return {
+        access_token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+        ...userData,
+      };
     } catch (e) {
       throw new HttpException('Error creating user: \n' + e.message, 500);
     }
+  }
+
+  getProfile(user: User) {
+    return this.prisma.user.findUnique({
+      where: {
+        id: user.id,
+      },
+      include: {
+        role: true,
+        communities: true,
+        community_admins: true,
+        announcements: true,
+      },
+    });
+  }
+
+  async getTokens(user: User) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync({
+        sub: user.id,
+        ...user,
+      }),
+      this.jwtService.signAsync(
+        {
+          sub: user.id,
+          ...user,
+        },
+        {
+          secret: 'secret',
+          expiresIn: '7d',
+        },
+      ),
+    ]);
 
     return {
-      success: true,
-      message: 'User registered successfully. Please login to continue',
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        refresh_token: refreshToken,
+      },
+    });
+  }
+
+  async refreshTokens(userId: string, refreshToken: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      include: {
+        role: true,
+        communities: true,
+        community_admins: true,
+        announcements: true,
+      },
+    });
+
+    if (user.refresh_token !== refreshToken) {
+      throw new HttpException('Invalid refresh token', 401);
+    }
+
+    const tokens = await this.getTokens(user);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    const { password, ...userData } = user;
+
+    return {
+      access_token: tokens.accessToken,
+      refresh_token: tokens.refreshToken,
+      ...userData,
     };
   }
 }

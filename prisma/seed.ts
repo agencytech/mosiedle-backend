@@ -47,7 +47,49 @@ async function main() {
     },
   });
 
-  console.log({ bartek, gustaw, firstCommunity });
+  const secondCommunity = await prisma.community.upsert({
+    where: { code: '4321DCBA' },
+    update: {},
+    create: {
+      code: '4321DCBA',
+      name: 'Second Community',
+      street_name: 'ul. Jagiellońska 13, Warszawa',
+      contact_email: 'kutas@kozla.pl',
+      members: {
+        connect: {
+          email: 'bartek@paczesny.pl',
+        },
+      },
+    },
+  });
+
+  const announcement = await prisma.announcement.create({
+    data: {
+      title: 'Hello World',
+      text: 'This is a test announcement',
+      communities: {
+        connect: {
+          code: '1234ABCD',
+        },
+      },
+      author: {
+        connect: {
+          email: 'bartek@paczesny.pl',
+        },
+      },
+      importance: 0,
+      icon: '🚀',
+      expire_at: new Date('2024-05-01T00:00:00Z'),
+    },
+  });
+
+  console.log({
+    bartek,
+    gustaw,
+    firstCommunity,
+    secondCommunity,
+    announcement,
+  });
 }
 main()
   .then(async () => {

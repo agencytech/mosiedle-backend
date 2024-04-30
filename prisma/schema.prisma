@@ -27,6 +27,8 @@ model User {
   community_admins Community[] @relation("CommunityAdmins")
 
   announcements Announcement[]
+
+  refresh_token String? @db.LongText
 }
 
 model Community {

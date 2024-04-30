@@ -2,7 +2,7 @@ import {
   Controller,
   Get,
   Post,
-  Body,
+  // Body,
   // Patch,
   Param,
   UseGuards,
@@ -24,23 +24,21 @@ export class CommunitiesController {
   // }
 
   @UseGuards(JwtAuthGuard)
-  @Post('join/:communityId')
-  join(
-    @Param('communityId') communityId: string,
-    @Request() req: any,
-    @Body() body: { code: string },
-  ) {
-    return this.communitiesService.join(communityId, req.user.id, body.code);
+  @Post('join/:community_code')
+  join(@Param('community_code') community_code: string, @Request() req: any) {
+    return this.communitiesService.join(community_code, req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.communitiesService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.communitiesService.findOne(+id);
+    return this.communitiesService.findOne(id);
   }
 
   // @Patch(':id')

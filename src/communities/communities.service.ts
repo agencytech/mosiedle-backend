@@ -14,18 +14,27 @@ export class CommunitiesService {
     return `This action returns all communities`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} community`;
+  findOne(id: string) {
+    return this.prisma.community.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        members: true,
+        admins: true,
+        announcements: true,
+      },
+    });
   }
 
-  async join(communityId: string, userId: string, community_code: string) {
+  async join(community_code: string, userId: string) {
     if (!community_code) {
       throw new HttpException('Community code is required', 400);
     }
 
     const community = await this.prisma.community.findUnique({
       where: {
-        id: communityId,
+        code: community_code,
       },
       include: {
         members: true,
@@ -52,7 +61,7 @@ export class CommunitiesService {
     try {
       await this.prisma.community.update({
         where: {
-          id: communityId,
+          code: community_code,
         },
         data: {
           members: {
@@ -64,7 +73,8 @@ export class CommunitiesService {
       });
 
       return {
-        message: 'Successfully joined community with id ' + communityId,
+        success: true,
+        message: 'Successfully joined community with code: ' + community_code,
       };
     } catch (error) {
       console.log(error);
