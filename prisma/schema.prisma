@@ -48,9 +48,9 @@ model Announcement {
   importance  Int
   icon        String
   title       String
-  text        String
+  text        String      @db.LongText
   author_id   String
-  author      User        @relation(fields: [author_id], references: [id])
+  author      User        @relation(fields: [author_id], references: [id], onDelete: Cascade)
   created_at  DateTime    @default(now())
   edited_at   DateTime    @default(now())
   expire_at   DateTime

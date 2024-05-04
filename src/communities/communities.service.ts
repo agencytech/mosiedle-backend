@@ -11,7 +11,13 @@ export class CommunitiesService {
   // }
 
   findAll() {
-    return `This action returns all communities`;
+    return this.prisma.community.findMany({
+      include: {
+        members: true,
+        admins: true,
+        announcements: true,
+      },
+    });
   }
 
   findOne(id: string) {
@@ -75,6 +81,50 @@ export class CommunitiesService {
       return {
         success: true,
         message: 'Successfully joined community with code: ' + community_code,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error.message, 500);
+    }
+  }
+
+  async leave(community_id: string, userId: string) {
+    if (!community_id) {
+      throw new HttpException('Community ID is required', 400);
+    }
+
+    const isMember = await this.prisma.community.findFirst({
+      where: {
+        id: community_id,
+        members: {
+          some: {
+            id: userId,
+          },
+        },
+      },
+    });
+
+    if (!isMember) {
+      throw new HttpException('User is not a member of this community', 400);
+    }
+
+    try {
+      await this.prisma.community.update({
+        where: {
+          id: community_id,
+        },
+        data: {
+          members: {
+            disconnect: {
+              id: userId,
+            },
+          },
+        },
+      });
+
+      return {
+        success: true,
+        message: 'Successfully left community with ID: ' + community_id,
       };
     } catch (error) {
       console.log(error);

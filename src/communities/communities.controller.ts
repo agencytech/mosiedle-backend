@@ -30,6 +30,12 @@ export class CommunitiesController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('leave/:community_id')
+  leave(@Param('community_id') community_id: string, @Request() req: any) {
+    return this.communitiesService.leave(community_id, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.communitiesService.findAll();

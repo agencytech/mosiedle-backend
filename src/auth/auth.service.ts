@@ -82,9 +82,6 @@ export class AuthService {
         },
         include: {
           role: true,
-          communities: true,
-          community_admins: true,
-          announcements: true,
         },
       });
       const tokens = await this.getTokens(user);
@@ -117,21 +114,18 @@ export class AuthService {
   }
 
   async getTokens(user: User) {
+    const data = {
+      sub: user.id,
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+    };
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync({
-        sub: user.id,
-        ...user,
+      this.jwtService.signAsync(data),
+      this.jwtService.signAsync(data, {
+        secret: 'secret',
+        expiresIn: '7d',
       }),
-      this.jwtService.signAsync(
-        {
-          sub: user.id,
-          ...user,
-        },
-        {
-          secret: 'secret',
-          expiresIn: '7d',
-        },
-      ),
     ]);
 
     return {
@@ -158,9 +152,6 @@ export class AuthService {
       },
       include: {
         role: true,
-        communities: true,
-        community_admins: true,
-        announcements: true,
       },
     });
 

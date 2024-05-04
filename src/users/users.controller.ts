@@ -7,10 +7,13 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -22,13 +25,28 @@ export class UsersController {
   }
 
   @Get()
-  findAll(@Query() query: any) {
-    return this.usersService.findAll(query);
+  async findAll(@Query() query: any) {
+    return await this.usersService.findAll(query);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string, @Query() query: any) {
     return this.usersService.findOne(id, query);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('communities/:id')
+  async findAllUserCommunities(
+    @Param('id') id: string,
+    @Query() query: any,
+    @Request() req: any,
+  ) {
+    const user = req.user;
+    const communities = await this.usersService.findAllUserCommunities(
+      user,
+      query,
+    );
+    return communities;
   }
 
   @Patch(':id')

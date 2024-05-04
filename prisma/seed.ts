@@ -17,10 +17,10 @@ async function main() {
   });
 
   const gustaw = await prisma.user.upsert({
-    where: { email: 'gugisek@gmail.com' },
+    where: { email: 'bartek@paczesny.pl' },
     update: {},
     create: {
-      email: 'gugisek@gmail.com',
+      email: 'bartek@paczesny.pl',
       fullName: 'Gustaw Sołdecki',
       password: 'password',
       role: {
@@ -41,7 +41,7 @@ async function main() {
       contact_email: 'example@email.com',
       members: {
         connect: {
-          email: 'gugisek@gmail.com',
+          email: 'bartek@paczesny.pl',
         },
       },
     },
@@ -82,6 +82,129 @@ async function main() {
       expire_at: new Date('2024-05-01T00:00:00Z'),
     },
   });
+
+  const announcements = [
+    {
+      title: 'Witamy w społeczności!',
+      text: 'Poznaj swoich sąsiadów i odkryj funkcje tej platformy!',
+      communities: {
+        connect: {
+          code: '1234ABCD',
+        },
+      },
+      author: {
+        connect: {
+          email: 'bartek@paczesny.pl',
+        },
+      },
+      importance: 0,
+      icon: '📢', // Announcement icon
+      expire_at: new Date('2024-05-31T00:00:00Z'),
+    },
+    {
+      title: 'Harmonogram najbliższej konserwacji',
+      text: 'W dniu [Data] od [Godzina] do [Godzina] odbędzie się planowana konserwacja. W tym czasie niektóre funkcje mogą być niedostępne.',
+      author: {
+        connect: {
+          email: 'bartek@paczesny.pl',
+        },
+      },
+      importance: 1,
+      icon: '🔧', // Wrench icon for maintenance
+      expire_at: new Date('2024-05-10T00:00:00Z'),
+    },
+    {
+      title: 'Alert o zaginięciu zwierzęcia!',
+      text: 'Z mieszkania 3 zaginął piesek o imieniu TWÓJ STARY. Jeśli masz jakiekolwiek informacje, skontaktuj się z Gustawem Sołdeckim pod numerem telefonu 690 690 690 lub adresem e-mail gugisek@gmail.com.',
+      communities: {
+        connect: {
+          code: '1234ABCD',
+        },
+      },
+      author: {
+        connect: {
+          email: 'bartek@paczesny.pl',
+        },
+      },
+      importance: 2,
+      icon: '🐶', // Dog icon (adjust based on pet type)
+      expire_at: new Date('2024-05-15T00:00:00Z'),
+    },
+    {
+      title: 'Impreza sąsiedzka!',
+      text: 'Zapraszamy na imprezę sąsiedzką w części wspólnej [Data] o [Godzina]. Przynieś potrawę do podzielenia się i poznaj swoich sąsiadów!',
+      communities: {
+        connect: {
+          code: '1234ABCD',
+        },
+      },
+      author: {
+        connect: {
+          email: 'bartek@paczesny.pl',
+        },
+      },
+      importance: 1,
+      icon: '️🍽️', // Plate and utensils icon
+      expire_at: new Date('2024-05-20T00:00:00Z'),
+    },
+    {
+      title: 'Przypomnienie o dostarczeniu paczki',
+      text: 'Przy recepcji czeka na odbiór paczka adresowana do [Twoje imię i nazwisko].',
+      communities: {
+        connect: {
+          code: '4321DCBA',
+        },
+      },
+      author: {
+        connect: {
+          email: 'bartek@paczesny.pl',
+        },
+      },
+      importance: 0,
+      icon: '📦', // Package icon
+      expire_at: new Date('2024-05-25T00:00:00Z'),
+    },
+    {
+      title: 'Nowy sprzęt na siłowni!',
+      text: 'Na siłownię dotarła nowa bieżnia! Przyjdź i ją wypróbuj.',
+      communities: {
+        connect: {
+          code: '4321DCBA',
+        },
+      },
+      author: {
+        connect: {
+          email: 'bartek@paczesny.pl',
+        },
+      },
+      importance: 0,
+      icon: '️🏋️', // Woman athlete icon
+      expire_at: new Date('2024-06-01T00:00:00Z'),
+    },
+    {
+      title: 'Ankieta dla mieszkańców - Twoja opinia jest ważna!',
+      text: 'Cenimy Twoją opinię! Poświęć kilka minut na wypełnienie naszej ankiety dla mieszkańców i pomóż nam ulepszyć społeczność.',
+      communities: {
+        connect: {
+          code: '4321DCBA',
+        },
+      },
+      author: {
+        connect: {
+          email: 'bartek@paczesny.pl',
+        },
+      },
+      importance: 1,
+      icon: '📊', // Bar chart icon
+      expire_at: new Date('2024-05-17T00:00:00Z'),
+    },
+  ];
+
+  for (const a of announcements) {
+    await prisma.announcement.create({
+      data: a,
+    });
+  }
 
   console.log({
     bartek,

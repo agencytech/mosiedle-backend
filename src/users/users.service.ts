@@ -1,12 +1,14 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/database/prisma.service';
-import { User } from '@prisma/client';
+import { Community, User } from '@prisma/client';
 
 interface Query {
   role?: boolean;
+  admins?: boolean;
   announcements?: boolean;
   communities?: boolean;
+  author?: boolean;
 }
 
 async function validateUser(createUserDto: User) {
@@ -64,6 +66,30 @@ export class UsersService {
         id,
       },
       include: query,
+    });
+  }
+
+  async findAllUserCommunities(user: User, query: Query): Promise<Community[]> {
+    for (const key in query) {
+      query[key] = query[key] === 'true';
+    }
+    return await this.prisma.community.findMany({
+      where: {
+        members: {
+          some: {
+            id: user.id,
+          },
+        },
+      },
+      include: {
+        members: true,
+        announcements: {
+          include: {
+            author: true,
+          },
+        },
+        admins: true,
+      },
     });
   }
 
